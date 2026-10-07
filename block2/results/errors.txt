@@ -1,0 +1,8 @@
+$ uv run python workspace/skills/csv-quality/scripts/check_csv.py --input workspace/data/khong-co.csv --max-hours 8
+ERROR: Không đọc được file workspace/data/khong-co.csv: No such file or directory
+exit code: 1
+
+$ uv run python workspace/skills/csv-quality/scripts/check_csv.py --input workspace/data/workload.csv
+usage: check_csv.py [-h] --input INPUT --max-hours MAX_HOURS
+check_csv.py: error: the following arguments are required: --max-hours
+exit code: 2
