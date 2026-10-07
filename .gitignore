@@ -1,6 +1,14 @@
+# Môi trường Python và cache
 .venv/
 __pycache__/
+*.pyc
 .pytest_cache/
 
-# Không đưa API key lên GitHub
+# API key: không đưa lên GitHub (giữ lại file mẫu .env.example)
 .env
+.env.*
+!.env.example
+
+# File rác của hệ điều hành / editor
+.DS_Store
+Thumbs.db

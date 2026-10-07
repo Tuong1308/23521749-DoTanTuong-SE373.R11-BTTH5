@@ -75,7 +75,7 @@ Test tự động (`uv run pytest`, không cần API key):
 
 Về chọn model: Gemini 3.x không chạy được qua `ChatOpenAI`. Lỗi 400 *"Function call is missing a thought_signature"* xảy ra ở lượt gọi model thứ 2 sau tool call, vì LangChain không gửi lại chữ ký của Gemini. Vì vậy dùng Groq, một provider tương thích OpenAI, chỉ đổi `.env` và **không sửa code**.
 
-> Điền sau khi chạy app với model thật. Mỗi trường hợp mở cuộc trò chuyện mới, không nhắc tên skill hay tên file.
+> Mỗi trường hợp mở cuộc trò chuyện mới, không nhắc tên skill hay tên file.
 
 ### Stage 00: giới hạn của agent (bản mẫu `stage-00-chat`)
 - Model: `qwen/qwen3.8-27b` (Groq, endpoint OpenAI-compatible).
@@ -110,6 +110,9 @@ Về chọn model: Gemini 3.x không chạy được qua `ChatOpenAI`. Lỗi 400
 3. **Nội dung chính sách:** phạm vi hiệu lực theo ngày mua, thời hạn 7 hoặc 14 ngày, phí 10% hoặc không phí, điều kiện kích hoạt. Phần này nằm trong `data/policies/`.
 4. **Quy trình nghiệp vụ:** chọn phiên bản theo **ngày mua**, quy ước tính ngày (bằng đúng hạn vẫn đủ điều kiện), hỏi lại khi thiếu thông tin, trích nguồn. Stage 02 bổ sung bằng skill `refund-policy`.
 
+![Stage 00: agent trả lời ngay, không có tool call nào](screenshots/stage00-case-A.png)
+*Stage 00: agent trả lời ngay, không có tool call nào*
+
 ### Kết quả chính thức (prompt gốc, model `qwen/qwen3.8-27b`)
 
 #### Trường hợp A (mua 28/09/2026, hoàn 06/10/2026, chưa kích hoạt): ĐẠT ✅
@@ -142,6 +145,9 @@ Về chọn model: Gemini 3.x không chạy được qua `ChatOpenAI`. Lỗi 400
 - Dẫn đúng tài liệu ✅
 
 Bằng chứng theo đề (*"Tool tìm file, đọc chính sách cũ; câu trả lời dẫn đúng tài liệu"*): seq 8 và 11 là `list_files`, seq 14 và 17 là `read_file data/policies/policy-before-oct.md`.
+
+![Trường hợp A: 4 model call, 5 tool call, kết luận không đủ điều kiện (8 > 7 ngày)](screenshots/official-case-A.png)
+*Trường hợp A: 4 model call, 5 tool call, kết luận không đủ điều kiện (8 > 7 ngày)*
 
 #### Trường hợp B sau khi đổi tên file (mua 02/10/2026, hoàn 12/10/2026, chưa kích hoạt): ĐẠT ✅
 - Đổi tên, giữ nguyên nội dung:
@@ -185,6 +191,9 @@ Agent biết tên mới **chỉ** nhờ kết quả `list_files`. Không có tê
 
 (Câu mở đầu "Đủ thông tin rồi ạ. Kết luận:" hơi lệch so với template, nhưng câu trả lời chỉ có **một** kết luận và kết luận này nằm sau các phép so sánh.)
 
+![Trường hợp B sau khi đổi tên file: agent dùng list_files để tìm tên mới](screenshots/official-case-B-renamed.png)
+*Trường hợp B sau khi đổi tên file: agent dùng list_files để tìm tên mới*
+
 #### Thiếu thông tin ("Tôi mua ngày 02/10/2026, muốn hoàn ngày 12/10/2026."): ĐẠT ✅
 - Kết quả cần đạt: agent hỏi trạng thái kích hoạt, chưa kết luận, không tự giả định "chưa kích hoạt".
 - Trace: `stage-02-skills-block1/traces/20261007-180549_70ca2cc6_turn01_e3fd7f8d.jsonl` (cuộc trò chuyện mới `70ca2cc6`).
@@ -208,6 +217,9 @@ Agent biết tên mới **chỉ** nhờ kết quả `list_files`. Không có tê
 - Câu hỏi dùng đúng mẫu *"Khi thiếu thông tin"* trong `answer-template.md`.
 
 Ghi chú: agent đọc tài liệu trước rồi mới hỏi lại. Skill (bước 1) hướng dẫn hỏi và dừng ngay khi thiếu thông tin. Cách làm của agent không vi phạm yêu cầu của đề, vì agent vẫn chưa kết luận, nhưng tốn thêm 3 tool call không cần thiết.
+
+![Thiếu thông tin: agent hỏi lại trạng thái kích hoạt](screenshots/official-missing-info.png)
+*Thiếu thông tin: agent hỏi lại trạng thái kích hoạt*
 
 ### Ghi chú quá trình (trước khi hoàn tác `prompts.py`)
 
@@ -234,6 +246,15 @@ Ghi chú: agent đọc tài liệu trước rồi mới hỏi lại. Skill (bư�
   - `answer-template.md` đổi thứ tự thành: dữ kiện, rồi phép so sánh (`N ≤ X` trong hạn hoặc `N > X` quá hạn), rồi **kết luận ở cuối**. Template nói rõ chỉ có **một** kết luận.
   - `SKILL.md` bước 5 thêm quy tắc: chỉ viết kết luận sau khi đã so sánh xong, và không tự sửa giữa chừng.
   - Đã đồng bộ sang `fixtures/`. `uv run pytest`: 58 passed.
+
+![Lần chạy 1: câu trả lời có hai kết luận mâu thuẫn](screenshots/stage02-case-A-run1-answer.png)
+*Lần chạy 1: câu trả lời có hai kết luận mâu thuẫn*
+
+![Catalog skill của stage 02](screenshots/stage02-catalog.png)
+*Catalog skill của stage 02*
+
+![Danh sách tool: list_files, read_file, write_file](screenshots/stage02-tools.png)
+*Danh sách tool: list_files, read_file, write_file*
 
 #### Lần chạy 2 (sau khi sửa template): ĐẠT ✅
 - Model `qwen/qwen3.8-27b`. Trace: `stage-02-skills-block1/traces/20261007-174809_bef2a8ef_turn01_5d8a411d.jsonl`
@@ -263,6 +284,9 @@ Ghi chú: agent đọc tài liệu trước rồi mới hỏi lại. Skill (bư�
 - Không đủ điều kiện: đúng ✅, chỉ còn **một** kết luận
 - Căn cứ dẫn đúng tài liệu: đúng ✅
 - Bằng chứng theo đề (*"Tool tìm file, đọc chính sách cũ; câu trả lời dẫn đúng tài liệu"*): seq 8/10 `list_files`, seq 14/16 `read_file data/policies/policy-before-oct.md`.
+
+![Lần chạy 2 sau khi sửa template](screenshots/stage02-case-A.png)
+*Lần chạy 2 sau khi sửa template*
 
 #### (Quá trình) Trường hợp B sau khi đổi tên file (mua 02/10/2026, hoàn 12/10/2026, chưa kích hoạt): ĐẠT ✅
 - Đổi tên, giữ nguyên nội dung:
@@ -300,6 +324,9 @@ Ghi chú: agent đọc tài liệu trước rồi mới hỏi lại. Skill (bư�
   - *"Lịch sử có nội dung skill và reference"*: seq 5 có SKILL.md, seq 19 có answer-template.md.
   - *"Cuộc trò chuyện mới tìm được file đã đổi tên"*: seq 9 `list_files` trả tên mới, seq 12–15 đọc file tên mới.
 - Không có tên file nào được ghi cố định trong prompt hay code: agent biết tên mới **chỉ** nhờ kết quả `list_files`.
+
+![(Quá trình) Trường hợp B sau khi đổi tên file](screenshots/stage02-case-B-renamed.png)
+*(Quá trình) Trường hợp B sau khi đổi tên file*
 
 ## 4. Câu hỏi cuối bài
 

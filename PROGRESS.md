@@ -26,7 +26,7 @@ Nguyên tắc: **bám sát đề, không thêm bớt**. Làm trên bản sao, gi
 - Stage 00: `stage-00-chat/traces/20261007-173247_9bc03040`
 - File chính sách ở stage 02 workspace hiện **đang mang tên mới** (`cs-hoan-tien-cu.md`, `cs-hoan-tien-moi.md`). Muốn trả về tên gốc thì chạy `uv run python reset_workspace.py`.
 
-## Block 2: đang làm
+## Block 2: XONG ✅
 - Code xong: `stage-03-bash-block2` (chỉ thêm `workload.csv`) và `stage-04-script-skill-block2`:
   - `check_csv.py`: thêm `--max-hours`, `hours_by_owner`, `overloaded_owners`, `excluded_rows`.
   - `SKILL.md` và `report-template.md` (bản rút gọn 978 byte), đã đồng bộ sang `fixtures/`.
@@ -38,11 +38,11 @@ Nguyên tắc: **bám sát đề, không thêm bớt**. Làm trên bản sao, gi
   - Stage 04 **ngưỡng 8 ✅**: `20261007-190101_86948ad2`, báo cáo `block2/results/agent-report-max8.md`
   - Stage 04 **ngưỡng 9 ✅**: `20261007-190437_10675312`, báo cáo `block2/results/agent-report-max9.md`
 
-### CÒN LẠI
-1. **Thiếu ngưỡng**: Cuộc trò chuyện mới, gửi *"Tính tổng giờ theo người trong data/workload.csv và xác định người quá tải."*. Mong đợi agent hỏi ngưỡng. Ghi vào dòng "Thiếu ngưỡng" của bảng Stage 04 trong `block2/analysis.md`.
-2. **File không tồn tại**: ví dụ *"Kiểm tra data/khong-co.csv, người nào vượt 8 giờ? Ghi báo cáo vào output/khong-co.md."*. Mong đợi script exit 1 (stderr), agent báo không phân tích được, không bịa số liệu. Ghi vào dòng "File không tồn tại".
-3. Rà lại `block2/analysis.md` (mục 4, câu hỏi cuối bài, đã có bản nháp).
-4. Trước khi nộp: không nộp `.env`. Thu hồi các API key đã lộ trong chat (Gemini, Claude, Groq).
+  - Stage 04 **thiếu ngưỡng ✅**: `20261007-190834_ab0f18e5` (agent hỏi ngưỡng, không chạy script)
+  - Stage 04 **file không tồn tại ✅**: `20261007-194333_5d3232ff` (script exit 1, agent không ghi báo cáo, không bịa số liệu)
+
+### TRẠNG THÁI: Block 1 và Block 2 đều đã đủ yêu cầu nộp
+Trước khi nộp: không nộp `.env`. Thu hồi các API key đã lộ trong chat (Gemini, Claude, Groq).
 
 ## Lưu ý cho Claude khi làm tiếp
 - Đọc trace: tải bằng `device_stage_files` rồi tóm tắt bằng python (các event `tool_started` và `tool_finished`). Trace không lưu câu trả lời cuối, nên xin người dùng ảnh và nguyên văn câu trả lời.

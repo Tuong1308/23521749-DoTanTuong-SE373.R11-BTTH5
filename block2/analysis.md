@@ -124,6 +124,9 @@ for i, row in enumerate(csv.DictReader(f), start=2):
 - Model tự kiểm tra file không bị sửa (seq 16–17) và **không ghi file đầu vào**, đúng yêu cầu.
 - Đây là lý do Stage 04 chuyển quy tắc vào **script có test**: ID trùng, owner rỗng và hours không hợp lệ được xử lý tất định, lần nào cũng ra Lan 9 giờ.
 
+![Stage 03: model tự viết Python, cộng trùng T02 nên Lan = 14](screenshots/stage03-workload.png)
+*Stage 03: model tự viết Python, cộng trùng T02 nên Lan = 14*
+
 ### Stage 04 (`stage-04-script-skill-block2`)
 
 #### Lần chạy 1, ngưỡng 8 (template bản đầu): số liệu đúng, báo cáo bị cắt
@@ -140,19 +143,52 @@ for i, row in enumerate(csv.DictReader(f), start=2):
 
 #### Kết quả chính thức (template rút gọn)
 
-
 | Trường hợp | Câu hỏi | Kết quả cần đạt | Trace | Kết quả thực tế |
 |---|---|---|---|---|
 | Ngưỡng 8 | *Kiểm tra data/workload.csv, người nào vượt 8 giờ? Ghi báo cáo vào output/workload.md.* | Lan 9 giờ, Minh 3 giờ, chỉ Lan quá tải. Loại dòng 5, 6, 7 | `20261007-190101_86948ad2_turn01_f4bd2eba.jsonl` | ✅ Lan (9 giờ) quá tải, Minh 3 giờ. Loại dòng 5 `invalid_hours`, dòng 6 `duplicate_id`, dòng 7 `missing_owner`. Báo cáo đầy đủ: [agent-report-max8.md](results/agent-report-max8.md). Ảnh: [stage04-max8.png](screenshots/stage04-max8.png) |
-| Ngưỡng 9 | *Kiểm tra data/workload.csv, người nào vượt 9 giờ? Ghi báo cáo vào output/workload.md.* | Tổng giờ và dòng bị loại như trên. Không ai quá tải | `20261007-190437_10675312_turn01_b1054d3f.jsonl` | ✅ Không ai quá tải: Lan 9 giờ (*"bằng ngưỡng, không quá tải"*), Minh 3 giờ. Loại dòng 5, 6, 7 như ngưỡng 8. Lệnh `--max-hours 9`, ghi báo cáo một lần: [agent-report-max9.md](results/agent-report-max9.md). Ảnh: [stage04-max9.png](screenshots/stage04-max9.png) |
-| Thiếu ngưỡng | *Tính tổng giờ theo người trong data/workload.csv và xác định người quá tải.* | Agent hỏi ngưỡng trước khi kết luận | `{…}` | `{…}` |
-| File không tồn tại | `{…}` | Script ghi stderr, exit khác 0. Agent báo không phân tích được | `{…}` | `{…}` |
+| Ngưỡng 9 | *Kiểm tra data/workload.csv, người nào vượt 9 giờ? Ghi báo cáo vào output/workload.md.* | Tổng giờ và dòng bị loại như trên. Không ai quá tải | `20261007-190437_10675312_turn01_b1054d3f.jsonl` | ✅ Không ai quá tải. Lan 9 giờ (bằng ngưỡng, không quá tải), Minh 3 giờ. Dòng bị loại giữ nguyên: dòng 5 `invalid_hours`, dòng 6 `duplicate_id`, dòng 7 `missing_owner`. Báo cáo đầy đủ: [agent-report-max9.md](results/agent-report-max9.md). Ảnh: [stage04-max9.png](screenshots/stage04-max9.png) |
+| Thiếu ngưỡng | *Tính tổng giờ theo người trong data/workload.csv và xác định người quá tải.* | Agent hỏi ngưỡng trước khi kết luận | `20261007-190834_ab0f18e5_turn01_0af6d004.jsonl` | ✅ Agent đọc `SKILL.md`, hỏi lại ngưỡng giờ và dừng lại, không tự chọn ngưỡng hay chạy script với ngưỡng tự bịa, không kết luận ai quá tải. Ảnh: [stage04-missing-threshold.png](screenshots/stage04-missing-threshold.png) |
+| File không tồn tại | *Kiểm tra data/khong-co.csv, người nào vượt 8 giờ? Ghi báo cáo vào output/workload.md.* | Script ghi stderr, exit khác 0. Agent báo không phân tích được | `20261007-194333_5d3232ff_turn01_8e78e623.jsonl` | ✅ Script và `read_file` đều báo lỗi không tìm thấy file. Script exit 1 (`stderr`: *"ERROR: Không đọc được file data/khong-co.csv: No such file or directory"*). Agent nhận diện lỗi thực thi, thông báo không thể phân tích, không bịa số liệu/người quá tải và không ghi file `output/workload.md`. Ảnh: [stage04-missing-file.png](screenshots/stage04-missing-file.png) |
 
 **Chi tiết ngưỡng 8** (4 model call, 4 tool call):
 1. seq 4: `read_file skills/csv-quality/SKILL.md`. Agent tự nạp skill, câu hỏi không nhắc tên skill.
 2. seq 8: `bash: python skills/csv-quality/scripts/check_csv.py --input data/workload.csv --max-hours 8` (exit 0), song song với seq 9: `read_file …/report-template.md`.
 3. seq 14: `write_file output/workload.md`, ghi **một lần**, 1014 byte, đầy đủ các mục của template.
 4. Câu trả lời tóm tắt đúng ngưỡng, người quá tải và các dòng bị loại kèm lý do. Mọi con số khớp với JSON của script ([results/workload-max-8.json](results/workload-max-8.json)).
+
+![Ngưỡng 8: Lan 9 giờ vượt ngưỡng](screenshots/stage04-max8.png)
+*Ngưỡng 8: Lan 9 giờ vượt ngưỡng*
+
+![Ngưỡng 8: báo cáo output/workload.md](screenshots/stage04-max8-output.png)
+*Ngưỡng 8: báo cáo output/workload.md*
+
+**Chi tiết ngưỡng 9** (4 model call, 5 tool call):
+1. seq 4–5: `read_file data/workload.csv` và `read_file skills/csv-quality/SKILL.md` (gọi song song).
+2. seq 10–11: `bash: python skills/csv-quality/scripts/check_csv.py --input data/workload.csv --max-hours 9` (exit 0) song song với `read_file …/report-template.md`.
+3. seq 16: `write_file output/workload.md`, ghi **một lần**, 1192 byte, báo cáo đúng định dạng template.
+4. Câu trả lời giải thích chính xác: Lan đạt 9 giờ (bằng ngưỡng nên không quá tải); Minh 3 giờ; các dòng 5, 6, 7 bị loại đúng lý do. Mọi con số khớp với JSON của script ([results/workload-max-9.json](results/workload-max-9.json)).
+
+![Ngưỡng 9: không ai quá tải (Lan bằng ngưỡng)](screenshots/stage04-max9.png)
+*Ngưỡng 9: không ai quá tải (Lan bằng ngưỡng)*
+
+![Ngưỡng 9: báo cáo output/workload.md](screenshots/stage04-max9-output.png)
+*Ngưỡng 9: báo cáo output/workload.md*
+
+**Chi tiết thiếu ngưỡng** (2 model call, 1 tool call):
+1. seq 4: `read_file skills/csv-quality/SKILL.md`. Agent tự nạp skill khi thấy yêu cầu kiểm tra quá tải.
+2. seq 7: Sau khi đọc quy tắc trong `SKILL.md` (*"Nếu người dùng chưa nêu ngưỡng: hỏi lại ngưỡng giờ và dừng, chưa chạy script, chưa kết luận ai quá tải"*), agent **không gọi thêm bất kỳ tool nào** (không chạy bash, không ghi file). Agent dừng lại và phản hồi: *"Mình có thể tính tổng giờ theo người và kiểm tra chất lượng CSV, nhưng phần 'quá tải' cần một ngưỡng giờ cụ thể, theo đúng quy tắc của skill (không tự chọn ngưỡng mặc định)... Bạn đang muốn dùng ngưỡng bao nhiêu giờ để coi là quá tải?"* (đúng 100% mong đợi). Ảnh minh chứng: [stage04-missing-threshold.png](screenshots/stage04-missing-threshold.png).
+
+![Thiếu ngưỡng: agent hỏi lại, không chạy script](screenshots/stage04-missing-threshold.png)
+*Thiếu ngưỡng: agent hỏi lại, không chạy script*
+
+**Chi tiết file không tồn tại** (4 model call, 4 tool call):
+1. seq 4–5: `read_file data/khong-co.csv` (thất bại: `FILE_NOT_FOUND`) và `read_file skills/csv-quality/SKILL.md` (thành công).
+2. seq 10–11: `bash: python skills/csv-quality/scripts/check_csv.py --input data/khong-co.csv --max-hours 8` -> **exit 1**, `stderr`: *"ERROR: Không đọc được file data/khong-co.csv: No such file or directory"*.
+3. seq 14–15: `bash: ls -la data/ ...` kiểm tra danh sách file CSV thực tế tồn tại trong `data/`.
+4. seq 17: Phản hồi rõ ràng rằng file không tồn tại, script exit 1 nên không thể ghi báo cáo vào `output/workload.md` (giải thích đúng nguyên tắc: ghi báo cáo khi chưa có dữ liệu sẽ là bịa kết quả), đồng thời liệt kê các file hợp lệ đang có để hỗ trợ người dùng. Hoàn toàn không ghi file, không bịa thống kê. Ảnh minh chứng: [stage04-missing-file.png](screenshots/stage04-missing-file.png).
+
+![File không tồn tại: script exit 1, agent không ghi báo cáo](screenshots/stage04-missing-file.png)
+*File không tồn tại: script exit 1, agent không ghi báo cáo*
 
 ## 4. Câu hỏi cuối bài
 
