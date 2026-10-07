@@ -4,6 +4,7 @@
 |---|---|
 | **Sinh viên** | Đỗ Tấn Tường |
 | **MSSV** | 23521749 |
+| **Báo cáo nộp** | [`BTTH5_23521749_DoTanTuong.pdf`](BTTH5_23521749_DoTanTuong.pdf) |
 | **Block 1: phân tích** | [`block1/analysis.md`](block1/analysis.md) |
 | **Block 1: tool `list_files`** | [`stage-02-skills-block1/tools/files.py`](stage-02-skills-block1/tools/files.py) (bản giống hệt trong [`stage-01-files-block1`](stage-01-files-block1/tools/files.py)) |
 | **Block 1: skill `refund-policy`** | [`stage-02-skills-block1/workspace/skills/refund-policy/`](stage-02-skills-block1/workspace/skills/refund-policy/) |
