@@ -1,5 +1,16 @@
 # Agent Tools & Skills Lab: bài làm Block 1 và Block 2
 
+| | |
+|---|---|
+| **Sinh viên** | Đỗ Tấn Tường |
+| **MSSV** | 23521749 |
+| **Block 1: phân tích** | [`block1/analysis.md`](block1/analysis.md) |
+| **Block 1: tool `list_files`** | [`stage-02-skills-block1/tools/files.py`](stage-02-skills-block1/tools/files.py) (bản giống hệt trong [`stage-01-files-block1`](stage-01-files-block1/tools/files.py)) |
+| **Block 1: skill `refund-policy`** | [`stage-02-skills-block1/workspace/skills/refund-policy/`](stage-02-skills-block1/workspace/skills/refund-policy/) |
+| **Block 2: phân tích** | [`block2/analysis.md`](block2/analysis.md) |
+| **Block 2: skill `csv-quality`** | [`stage-04-script-skill-block2/workspace/skills/csv-quality/`](stage-04-script-skill-block2/workspace/skills/csv-quality/) (script `scripts/check_csv.py`) |
+| **Danh sách đầy đủ** | [Danh sách file nộp theo đề](#danh-sách-file-nộp-theo-đề) (trace, JSON, ảnh) |
+
 Bài lab gồm các LangChain agent có giao diện chat Streamlit, mỗi stage thêm một năng lực: chat, rồi đọc/ghi file, rồi skill, rồi bash, rồi skill có script. Repo này chứa project mẫu (5 stage gốc, giữ nguyên) và **bài làm** của hai bài tập:
 
 - **Block 1: Tra cứu chính sách đúng phiên bản.** Thêm tool `list_files` và skill `refund-policy`.
